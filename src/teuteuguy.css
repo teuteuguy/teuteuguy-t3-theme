@@ -1,0 +1,188 @@
+/* ============ teuteuguy theme ============ */
+/* Baseline palette: Tokyo Night (dark) / Tokyo Night Light (light), by enkia.  */
+/* Look inspired by @MADshadowman's Cyberpunk T3 Code screenshots on X.        */
+/* This CSS only adds structure (framed tiles), transparency and state.    */
+
+@property --tg-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes tg-spin { to { --tg-angle: 360deg; } }
+
+/* ---- sidebar backdrop: faint grid so the translucent tiles read as glass ---- */
+[data-slot="sidebar-inner"] {
+  --tg-fg: var(--app-theme-sidebar-foreground, #c0caf5);
+  --tg-accent: var(--app-theme-message-action, #7aa2f7);
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--tg-fg) 2.2%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--tg-fg) 2.2%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* ---- thread tiles: card rows, slim rows and rows inside project folders ---- */
+[data-thread-item] { padding-block: 3px !important; }
+
+:is([data-testid="sidebar-row-card"], [data-testid="sidebar-row-slim"], [data-testid="sidebar-row-folder"]) {
+  --tg-cut: 11px;
+  --tg-line: color-mix(in oklab, var(--tg-fg) 22%, transparent);
+  --tg-fill: color-mix(in oklab, var(--tg-fg) 4%, transparent);
+  --tg-tint: transparent;
+  border: 1px solid var(--tg-line) !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background-image:
+    /* diagonal edge of the cut corner, drawn just inside the clip so it stays visible */
+    linear-gradient(to top left, transparent 50%, var(--tg-line) 50%, var(--tg-line) calc(50% + 1.2px), transparent calc(50% + 1.2px)),
+    /* state tint */
+    linear-gradient(135deg, var(--tg-tint), transparent 80%),
+    /* glass fill */
+    linear-gradient(var(--tg-fill), var(--tg-fill)) !important;
+  background-size: var(--tg-cut) var(--tg-cut), 100% 100%, 100% 100% !important;
+  background-position: right bottom, 0 0, 0 0 !important;
+  background-repeat: no-repeat !important;
+  background-origin: border-box !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--tg-cut)), calc(100% - var(--tg-cut)) 100%, 0 100%);
+  transition: border-color .15s ease;
+}
+:is([data-testid="sidebar-row-slim"], [data-testid="sidebar-row-folder"]) { --tg-cut: 8px; }
+
+/* top-left notch */
+:is([data-testid="sidebar-row-card"], [data-testid="sidebar-row-slim"], [data-testid="sidebar-row-folder"])::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 5px; height: 5px;
+  background: var(--tg-line);
+  pointer-events: none;
+}
+
+:is([data-testid="sidebar-row-card"], [data-testid="sidebar-row-slim"], [data-testid="sidebar-row-folder"]):hover {
+  --tg-line: color-mix(in oklab, var(--tg-fg) 38%, transparent);
+  --tg-fill: color-mix(in oklab, var(--tg-fg) 7%, transparent);
+}
+
+/* active (open) thread */
+:is([data-testid="sidebar-row-card"], [data-testid="sidebar-row-slim"], [data-testid="sidebar-row-folder"]):is([aria-current="page"], [aria-current="true"], .bg-sidebar-row-active) {
+  --tg-line: color-mix(in oklab, var(--tg-accent) 85%, transparent);
+  --tg-fill: color-mix(in oklab, var(--tg-accent) 12%, transparent);
+}
+
+/* ---- state colouring, keyed off the row's status pill ---- */
+
+/* Done */
+[data-sidebar-row][data-testid^="sidebar-row-"]:has(span.font-medium.text-success-foreground) {
+  --tg-tint: rgb(158 206 106 / .24);
+  --tg-line: rgb(158 206 106 / .55);
+}
+/* Waiting (background work) */
+[data-sidebar-row][data-testid^="sidebar-row-"]:has(span.font-medium.text-muted-foreground) {
+  --tg-tint: color-mix(in oklab, var(--tg-fg) 10%, transparent);
+}
+/* Needs you: approval, limited, woke */
+[data-sidebar-row][data-testid^="sidebar-row-"]:has(.font-medium.text-warning-foreground) {
+  --tg-tint: rgb(224 175 104 / .22);
+  --tg-line: rgb(224 175 104 / .55);
+}
+/* Needs you: input / guest request */
+[data-sidebar-row][data-testid^="sidebar-row-"]:has(span.font-medium.text-indigo-600),
+[data-sidebar-row][data-testid^="sidebar-row-"]:has(span.font-medium.text-guest-foreground) {
+  --tg-tint: rgb(187 154 247 / .22);
+  --tg-line: rgb(187 154 247 / .55);
+}
+/* Failed */
+[data-sidebar-row][data-testid^="sidebar-row-"]:has(span.font-medium.text-error-foreground) {
+  --tg-tint: rgb(247 118 142 / .22);
+  --tg-line: rgb(247 118 142 / .55);
+}
+
+/* Working / Setting up / Goal: rotating sweep on the frame and faintly through the glass */
+[data-sidebar-row][data-testid^="sidebar-row-"]:has(span.font-medium.text-info-foreground) {
+  --tg-glass: color-mix(in oklab, var(--app-theme-sidebar, #16161e) 84%, transparent);
+  border-color: transparent !important;
+  /* glass is split in three so a 1.2px strip along the cut corner stays open,
+     letting the rotating conic show through as the angled border */
+  background-image:
+    linear-gradient(var(--tg-glass), var(--tg-glass)),
+    linear-gradient(var(--tg-glass), var(--tg-glass)),
+    linear-gradient(to top left, transparent calc(50% + 1.2px), var(--tg-glass) calc(50% + 1.2px)),
+    conic-gradient(from var(--tg-angle),
+      rgb(125 207 255 / .10) 0deg,
+      rgb(125 207 255) 40deg,
+      rgb(125 207 255 / .10) 110deg,
+      rgb(125 207 255 / .10) 180deg,
+      rgb(187 154 247 / .95) 220deg,
+      rgb(125 207 255 / .10) 290deg) !important;
+  background-size:
+    100% calc(100% - var(--tg-cut)),
+    calc(100% - var(--tg-cut)) var(--tg-cut),
+    var(--tg-cut) var(--tg-cut),
+    100% 100% !important;
+  background-position: left top, left bottom, right bottom, 0 0 !important;
+  background-repeat: no-repeat !important;
+  background-clip: padding-box, padding-box, padding-box, border-box !important;
+  background-origin: border-box !important;
+  animation: tg-spin 3.2s linear infinite;
+}
+
+/* ---- project folders: header + its threads read as one framed container ---- */
+/* The app renders them as sibling <li>s, so the frame is assembled piece by piece:
+   header = top + sides, each child = sides, last child = bottom + cut corner. */
+[data-slot="sidebar-inner"] {
+  --tg-frame: color-mix(in oklab, var(--tg-fg) 20%, transparent);
+  --tg-frame-fill: color-mix(in oklab, var(--tg-fg) 3%, transparent);
+}
+li[data-testid="sidebar-project-folder"] {
+  --tg-cut: 11px;
+  border: 1px solid var(--tg-frame);
+  background:
+    linear-gradient(to top left, transparent 50%, var(--tg-frame) 50%, var(--tg-frame) calc(50% + 1.2px), transparent calc(50% + 1.2px)) right bottom / var(--tg-cut) var(--tg-cut) no-repeat border-box,
+    var(--tg-frame-fill);
+  padding: 3px 4px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--tg-cut)), calc(100% - var(--tg-cut)) 100%, 0 100%);
+}
+li[data-testid="sidebar-project-folder"]::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 6px; height: 6px;
+  background: var(--tg-frame);
+  pointer-events: none;
+}
+li[data-testid="sidebar-project-folder"] > button { border-radius: 0 !important; }
+/* followed by child rows (expanded, or collapsed but still showing the open thread):
+   open at the bottom, frame continues down through the children */
+li[data-testid="sidebar-project-folder"]:has(+ li[data-thread-item] [data-testid="sidebar-row-folder"]) {
+  border-bottom: 0;
+  background: var(--tg-frame-fill);
+  clip-path: none;
+  padding-bottom: 2px;
+}
+
+li[data-thread-item]:has([data-testid="sidebar-row-folder"]) {
+  --tg-cut: 11px;
+  border-inline: 1px solid var(--tg-frame);
+  background: var(--tg-frame-fill);
+  padding: 4px 8px 3px !important;
+  /* overlap the row above by 1px so fractional row heights never leave a gap in the side lines */
+  margin-top: -1px !important;
+}
+/* last child closes the folder frame */
+li[data-thread-item]:has([data-testid="sidebar-row-folder"]):not(:has(+ li[data-thread-item] [data-testid="sidebar-row-folder"])) {
+  border-bottom: 1px solid var(--tg-frame);
+  padding-bottom: 8px !important;
+  background:
+    linear-gradient(to top left, transparent 50%, var(--tg-frame) 50%, var(--tg-frame) calc(50% + 1.2px), transparent calc(50% + 1.2px)) right bottom / var(--tg-cut) var(--tg-cut) no-repeat border-box,
+    var(--tg-frame-fill);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--tg-cut)), calc(100% - var(--tg-cut)) 100%, 0 100%);
+}
+/* child tiles: smaller, no deep indent (the frame shows the nesting) */
+[data-testid="sidebar-row-folder"] {
+  --tg-cut: 7px;
+  padding-inline-start: 10px !important;
+}
+[data-testid="sidebar-row-folder"]::before { width: 4px; height: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-sidebar-row] { animation: none !important; }
+}
