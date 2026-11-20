@@ -183,6 +183,26 @@ li[data-thread-item]:has([data-testid="sidebar-row-folder"]):not(:has(+ li[data-
 }
 [data-testid="sidebar-row-folder"]::before { width: 4px; height: 4px; }
 
+/* ---- open thread: solid light bar on the left edge glowing into the tile ---- */
+/* Tokyo Night's bright blue: the app's accent role is too dark to stand out. */
+[data-slot="sidebar-inner"] { --tg-hi: #7aa2f7; }
+:root:not(.dark) [data-slot="sidebar-inner"] { --tg-hi: #2e7de9; }
+/* :not(#tg-x) lifts specificity above the state rules, so the open thread keeps
+   its accent frame even when it is also Done, Approval, etc. */
+[data-sidebar-row][data-testid^="sidebar-row-"]:is([aria-current="page"], [aria-current="true"], .bg-sidebar-row-active):not(#tg-x) {
+  --tg-line: var(--tg-hi);
+  --tg-fill: color-mix(in oklab, var(--tg-hi) 20%, transparent);
+  box-shadow:
+    inset 5px 0 0 0 var(--tg-hi),
+    inset 46px 0 30px -22px color-mix(in oklab, var(--tg-hi) 60%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--tg-hi) 40%, transparent) !important;
+  padding-inline-start: 17px !important;
+}
+[data-sidebar-row][data-testid^="sidebar-row-"]:is([aria-current="page"], [aria-current="true"], .bg-sidebar-row-active) .truncate:not(.font-normal) {
+  color: var(--tg-fg) !important;
+  font-weight: 600;
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-sidebar-row] { animation: none !important; }
 }
